@@ -155,6 +155,7 @@ use_local_users
 
 case $TARGET in
   all)
+    run_playbook barracuda
     run_playbook ad
     run_playbook dns
     run_playbook linux
@@ -177,7 +178,7 @@ case $TARGET in
     run_playbook lustre-sas
     run_playbook lustre
   ;;
-  ad | ad2 | linux | add_users | add_local_users | ccportal | chrony | cccluster | scheduler | grafana | telegraf | ood-custom | remove_users | tests | guacamole | guac_spooler | dns)
+  barracuda | ad | ad2 | linux | add_users | add_local_users | ccportal | chrony | cccluster | scheduler | grafana | telegraf | ood-custom | remove_users | tests | guacamole | guac_spooler | dns)
     run_playbook $TARGET
   ;;
   ood)

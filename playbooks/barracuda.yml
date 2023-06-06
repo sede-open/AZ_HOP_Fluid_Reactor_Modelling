@@ -1,0 +1,40 @@
+---
+- name: Configure RHEL
+  hosts: scheduler, ondemand, grafana
+  become: true
+  gather_facts: no
+  vars_files:
+    - '{{global_config_file}}'
+
+  tasks:
+  - name: Wait 300 seconds for the nodes to be ready
+    wait_for_connection:
+      timeout: 300
+  - name: Gather facts for first time
+    setup:
+
+  - name: Update RHEL configuration
+    block:
+    - name: Check /var partition size
+      command: lvdisplay /dev/rootvg/varlv --units b --column --noheadings --nosuffix -o lv_size
+      register: varlv_size
+
+    - name: resize /var partition to 30 GiB if it is < 30GB
+      shell: |
+        lvextend -l 30G /dev/rootvg/varlv
+        xfs_growfs /dev/rootvg/varlv
+      when: varlv_size.rc == 0 and varlv_size.stdout | int < 30000000000
+
+    - name: enable RHEL repos and install epel (RHEL)
+      shell: |
+        yum-config-manager --enable rhui-*-optional-rpms rhui-*-extras-rpms rhui-*-supplementary-rpms
+        rpm -q epel-release || yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+        yum makecache
+
+    - name: disable firewall and SElinux (RHEL)
+      shell: |
+        firewall-cmd --set-default trusted
+        setenforce permissive
+        sed -i 's/^SELINUX=.*$/SELINUX=permissive/' /etc/selinux/config
+
+    when: ansible_distribution == "RedHat"
