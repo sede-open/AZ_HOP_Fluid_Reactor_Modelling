@@ -72,6 +72,7 @@ fi
 
 tenant_id=$(az account show -o json | jq -r .tenantId)
 user_type=$(az account show --query user.type -o tsv)
+user_identity=""
 if [ ${user_type} == "user" ]; then
   use_azure_cli_auth=true
 else
@@ -83,8 +84,12 @@ else
           use_azure_cli_auth=false
           ;;
       "userAssignedIdentity")
-          echo "userAssignedIdentity not supported; please use a systemAssignedIdentity or a Service Principal Name instead"
-          exit 1
+          vmname=$(curl -s --noproxy "*" -H Metadata:true "http://169.254.169.254/metadata/instance?api-version=2019-08-15" | jq -r '.compute.name')
+          rgname=$(curl -s --noproxy "*" -H Metadata:true "http://169.254.169.254/metadata/instance?api-version=2019-08-15" | jq -r '.compute.resourceGroupName')
+          client_id=$(az vm identity show -g $rgname --n $vmname --query userAssignedIdentities.*.clientId -o tsv)
+          user_identity="-var var_client_id=$client_id"
+          echo " - logged in Azure with User Assigned Identity ${client_id}"
+          use_azure_cli_auth=false
           ;;
       *)
           use_azure_cli_auth=true
@@ -157,7 +162,7 @@ if [ "$image_id" == "" ] || [ $FORCE -eq 1 ]; then
     -var "var_cloud_env=$cloud_env" \
     -var "var_key_vault_name=$key_vault_name" \
     -var "var_keep_os_disk=$KEEP_OS_DISK" \
-    $PACKER_FILE | tee $logfile
+    $user_identity $PACKER_FILE | tee $logfile
 
   image_id=$(az image list -g $resource_group --query "[?name=='$image_name'].id" -o tsv)
   # Tag the image with the checksum 
