@@ -1,5 +1,5 @@
 #!/bin/bash
-REX="([^@]+)%40domain.com" # To extract user from user%40domain.com
+REX="([^@]+)%40shell.com" # To extract user from user%40domain.com
 #REX="([^@]+)%40\w+.com" # To extract user from any .com domains
 #REX="(^\w+)" # To extract firstname from firstname.lastname@domain.com
 INPUT_USER="$1"
