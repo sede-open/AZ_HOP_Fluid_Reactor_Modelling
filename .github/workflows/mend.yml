@@ -1,0 +1,27 @@
+name: mend
+
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "main" ]
+
+
+jobs:
+  mend:
+    runs-on: ubuntu-latest
+
+    env:
+      MEND_API_KEY : ${{secrets.MEND_API_KEY}}
+      
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: get PFX file for terraform authentication
+        run: |
+
+          SETX MAVEN_OPTS "-Xmx1024M -Xss128M -XX:MetaspaceSize=512M -XX:MaxMetaspaceSize=1024M -XX:+CMSClassUnloadingEnabled"
+
+          java -jar wss-unified-agent.jar -c wss-unified-agent.config wss.url https://shell.whitesourcesoftware.com/agent apiKey ${{ env.MEND_API_KEY }}
