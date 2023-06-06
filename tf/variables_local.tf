@@ -23,6 +23,7 @@ locals {
     # azurerm_client_config contains empty values for Managed Identity so use variables instead
     tenant_id = var.tenant_id
     logged_user_objectId = var.logged_user_objectId
+    user_identity_id = var.user_identity_id
 
     # config files and directories
     packer_root_dir = "${path.cwd}/packer"

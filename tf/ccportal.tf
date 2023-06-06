@@ -32,7 +32,10 @@ resource "azurerm_linux_virtual_machine" "ccportal" {
 
   # SYSTEM MANAGE IDENTITY CONFIG*/
   identity {
-    type         = "SystemAssigned"
+    type         = "UserAssigned"
+    identity_ids = [
+      local.user_identity_id,
+    ]
   }
 
   dynamic "source_image_reference" {

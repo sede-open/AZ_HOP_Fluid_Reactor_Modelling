@@ -155,6 +155,7 @@ function get_azure_context()
             echo " - logged in Azure with User Assigned Identity from ${vmname}/${rgname}"
             export TF_VAR_logged_user_objectId=$(az resource list -n $vmname -g $rgname --query [*].identity.userAssignedIdentities.*.principalId --out tsv)
             client_id=$(az vm identity show -g $rgname --n $vmname --query userAssignedIdentities.*.clientId -o tsv)
+            export TF_VAR_user_identity_id=$(az vm identity show -g RG-PoC-AzureHPC --n deployer --query "keys(userAssignedIdentities)" -o tsv)
             export ARM_TENANT_ID=${TF_VAR_tenant_id}
             export ARM_CLIENT_ID=${client_id}
             export ARM_SUBSCRIPTION_ID=${subscription_id}
