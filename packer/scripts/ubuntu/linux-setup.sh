@@ -4,7 +4,7 @@ echo " *                                                                        
 echo " *     LINUX SETUP                                                                * "
 echo " *                                                                                * "
 echo " ********************************************************************************** "
-packages="nfs-common jq chrony tcsh"
+packages="nfs-common jq chrony"
 
 apt-get clean -y
 apt-get autoremove -y
