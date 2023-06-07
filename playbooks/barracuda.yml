@@ -1,6 +1,32 @@
 ---
-- name: Configure RHEL
-  hosts: scheduler, ondemand, grafana
+- name: Configure common RHEL settings
+  #hosts: scheduler, ondemand, grafana
+  hosts: grafana
+  become: true
+  gather_facts: no
+  vars_files:
+    - '{{global_config_file}}'
+
+  tasks:
+  - name: Wait 300 seconds for the nodes to be ready
+    wait_for_connection:
+      timeout: 300
+  - name: Gather facts for first time
+    setup:
+
+  - name: Update RHEL configuration
+    block:
+    - name: disable firewall and SElinux (RHEL)
+      shell: |
+        firewall-cmd --set-default trusted
+        setenforce permissive
+        sed -i 's/^SELINUX=.*$/SELINUX=permissive/' /etc/selinux/config
+
+    when: ansible_distribution == "RedHat"
+
+- name: Configure additional RHEL repositories
+  #hosts: ondemand
+  hosts: grafana
   become: true
   gather_facts: no
   vars_files:
@@ -21,7 +47,7 @@
 
     - name: resize /var partition to 30 GiB if it is < 30GB
       shell: |
-        lvextend -l 30G /dev/rootvg/varlv
+        lvextend /dev/rootvg/varlv -L 30G
         xfs_growfs /dev/rootvg/varlv
       when: varlv_size.rc == 0 and varlv_size.stdout | int < 30000000000
 
@@ -31,10 +57,48 @@
         rpm -q epel-release || yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
         yum makecache
 
-    - name: disable firewall and SElinux (RHEL)
-      shell: |
-        firewall-cmd --set-default trusted
-        setenforce permissive
-        sed -i 's/^SELINUX=.*$/SELINUX=permissive/' /etc/selinux/config
-
     when: ansible_distribution == "RedHat"
+
+
+- name: Customize user homes
+  #hosts: ondemand
+  hosts: grafana
+  become: true
+  gather_facts: no
+  vars_files:
+    - '{{global_config_file}}'
+
+  tasks:
+  - name: Wait 300 seconds for the nodes to be ready
+    wait_for_connection:
+      timeout: 300
+  - name: Gather facts for first time
+    setup:
+
+  - name: create Desktop directory
+    file:
+      path: '{{ homedir_mountpoint }}/{{ item.name }}/Desktop'
+      state: directory
+      owner: '{{item.name}}'
+      group: 'azhop-users'
+      mode: '0755'
+    with_items: '{{users}}'
+
+  - name: create bararcuda launcher
+    copy:
+      dest: "{{ homedir_mountpoint }}/{{ item.name }}/Desktop/Barracuda.desktop"
+      owner: '{{item.name}}'
+      group: 'azhop-users'
+      mode: '0755'
+      content: |
+        [Desktop Entry]
+        Version=1.0
+        Type=Application
+        Name=Barracuda
+        Comment=
+        Exec=/sharedhome/apps/CPFD/launch-barracuda.sh
+        Icon=
+        Path=
+        Terminal=false
+        StartupNotify=false
+    with_items: '{{users}}'
