@@ -21,12 +21,13 @@
     uid: '{{ munge_uid }}'
     state: present
 
-- name: install epel
+- name: install epel (CentOS)
   yum: 
     name:
       - epel-release
     state: present
     lock_timeout : 180
+  when: ansible_distribution == "CentOS"
 
 - name: install munge
   yum:
