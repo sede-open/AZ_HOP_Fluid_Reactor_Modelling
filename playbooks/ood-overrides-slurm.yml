@@ -12,6 +12,8 @@ ood_apps:
         require "yaml"
         scheduler_args = ["-p", target]
 
+        scheduler_args += [ "--mail-user=%s@shell.com" % ENV["USER"] ]
+
         # If the user has specified a number of hours, set the job walltime
         hours = num_hours.to_i
         if hours > 0
