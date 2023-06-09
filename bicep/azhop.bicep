@@ -56,6 +56,8 @@ var linuxBasePlan = contains(azhopConfig, 'linux_base_plan') ? azhopConfig.linux
 var windowsBaseImage = contains(azhopConfig, 'windows_base_image') ? azhopConfig.windows_base_image : 'MicrosoftWindowsServer:WindowsServer:2019-Datacenter-smalldisk:latest'
 var lustreBaseImage = contains(azhopConfig, 'lustre_base_image') ? azhopConfig.lustre_base_image : 'azhpc:azurehpc-lustre:azurehpc-lustre-2_12:latest'
 var lustreBasePlan = contains(azhopConfig, 'lustre_base_plan') ? azhopConfig.lustre_base_plan : 'azhpc:azurehpc-lustre:azurehpc-lustre-2_12'
+var cyclecloudBaseImage = contains(azhopConfig.cyclecloud, 'image') ? azhopConfig.cyclecloud.image : 'OpenLogic:CentOS:7_9-gen2:latest'
+var cyclecloudBasePlan = contains(azhopConfig.cyclecloud, 'plan') ? azhopConfig.cyclecloud.plan : ''
 
 var createDatabase = (config.queue_manager == 'slurm' && config.slurm.accounting_enabled ) || config.enable_remote_winviz
 
@@ -252,6 +254,17 @@ var config = {
         version: split(windowsBaseImage,':')[3]
       }
     }
+    cyclecloud_base: {
+      plan: cyclecloudBasePlan
+      ref: contains(cyclecloudBaseImage, '/') ? {
+        id: cyclecloudBaseImage
+      } : {
+        publisher: split(cyclecloudBaseImage,':')[0]
+        offer: split(cyclecloudBaseImage,':')[1]
+        sku: split(cyclecloudBaseImage,':')[2]
+        version: split(cyclecloudBaseImage,':')[3]
+      }
+    }
   }
 
 
@@ -279,7 +292,7 @@ var config = {
         subnet: 'admin'
         sku: azhopConfig.cyclecloud.vm_size
         osdisksku: 'StandardSSD_LRS'
-        image: 'linux_base'
+        image: 'cyclecloud_base'
         datadisks: [
           {
             name: 'ccportal-datadisk0'
@@ -404,7 +417,7 @@ var config = {
     Bastion: ['22', '3389']
     Web: ['443', '80']
     Ssh: ['22']
-    HubSsh: [string(jumpboxSshPort), string(deployerSshPort)]
+    HubSsh: deployDeployer ? [string(deployerSshPort)] : [string(jumpboxSshPort)]
     // DNS, Kerberos, RpcMapper, Ldap, Smb, KerberosPass, LdapSsl, LdapGc, LdapGcSsl, AD Web Services, RpcSam
     DomainControlerTcp: ['53', '88', '135', '389', '445', '464', '636', '3268', '3269', '9389', '49152-65535']
     // DNS, Kerberos, W32Time, NetBIOS, Ldap, KerberosPass, LdapSsl
@@ -580,7 +593,7 @@ var config = {
       AllowRobinhoodOut           : ['430', 'Outbound', 'Allow', 'Tcp', 'Web', 'asg', 'asg-ondemand', 'asg', 'asg-robinhood']
     }
     internet: {
-      AllowInternetSshIn          : ['200', 'Inbound', 'Allow', 'Tcp', 'Ssh', 'tag', 'Internet', 'asg', 'asg-jumpbox']
+      AllowInternetSshIn          : ['200', 'Inbound', 'Allow', 'Tcp', 'HubSsh', 'tag', 'Internet', 'asg', 'asg-jumpbox']
       AllowInternetHttpIn         : ['210', 'Inbound', 'Allow', 'Tcp', 'Web', 'tag', 'Internet', 'asg', 'asg-ondemand']
     }
     hub: {
@@ -602,17 +615,16 @@ module azhopSecrets './secrets.bicep' = if (autogenerateSecrets) {
   name: 'azhopSecrets'
   params: {
     location: location
+    kvName: autogenerateSecrets ? azhopKeyvaultSecrets.outputs.keyvaultName : 'foo' // trick to avoid unreferenced resource for azhopKeyvaultSecrets
+    adminUser: config.admin_user
+    dbAdminUser: config.slurm.admin_user
+    identityId: autogenerateSecrets ? identity.id : '' // trick to avoid unreferenced resource for identity
   }
 }
 
-var secrets = (autogenerateSecrets) ? azhopSecrets.outputs.secrets : {
-  adminSshPublicKey: adminSshPublicKey
-  adminSshPrivateKey: adminSshPrivateKey
-  adminPassword: adminPassword
-  databaseAdminPassword: databaseAdminPassword
+resource kv 'Microsoft.KeyVault/vaults@2021-10-01' existing = if (autogenerateSecrets) {
+  name: azhopKeyvaultSecrets.outputs.keyvaultName
 }
-
-var domainPassword = secrets.adminPassword
 
 module azhopNetwork './network.bicep' = {
   name: 'azhopNetwork'
@@ -653,7 +665,8 @@ module azhopVm './vm.bicep' = [ for vm in vmItems: {
     image: config.images[vm.value.image]
     subnetId: subnetIds[vm.value.subnet]
     adminUser: config.admin_user
-    secrets: secrets
+    adminPassword: autogenerateSecrets ? kv.getSecret(azhopSecrets.outputs.secrets.adminPassword) : adminPassword
+    adminSshPublicKey: autogenerateSecrets ? kv.getSecret(azhopSecrets.outputs.secrets.adminSshPublicKey) : adminSshPublicKey
     asgIds: asgNameToIdLookup
   }
 }]
@@ -667,6 +680,28 @@ module azhopRoleAssignements './roleAssignments.bicep' = [ for vm in vmItems: if
     principalId: azhopVm[indexOf(map(vmItems, item => item.key), vm.key)].outputs.principalId
   }
 }]
+
+resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = if (autogenerateSecrets) {
+  name: 'deployScriptIdentity'
+  location: location
+}
+
+module azhopKeyvaultSecrets './keyvault.bicep' = if (autogenerateSecrets) {
+  name: 'azhopKeyvaultSecrets'
+  params: {
+    location: location
+    kvName: config.key_vault_name
+    subnetId: subnetIds.admin
+    keyvaultReaderOids: config.keyvault_readers
+    lockDownNetwork: config.lock_down_network.enforce
+    allowableIps: config.lock_down_network.grant_access_from
+    keyvaultOwnerId: loggedUserObjectId
+    identityPerms: autogenerateSecrets ? [{
+      principalId: identity.properties.principalId
+      secret_permissions: ['Set']
+    }] : [] // trick to avoid unreferenced resource for identity
+  }
+}
 
 module azhopKeyvault './keyvault.bicep' = {
   name: 'azhopKeyvault'
@@ -686,39 +721,39 @@ module azhopKeyvault './keyvault.bicep' = {
   }
 }
 
-module kvSecretAdminPassword './kv_secrets.bicep' = {
+module kvSecretAdminPassword './kv_secrets.bicep' = if (!autogenerateSecrets) {
   name: 'kvSecrets-admin-password'
   params: {
     vaultName: azhopKeyvault.outputs.keyvaultName
     name: '${config.admin_user}-password'
-    value: secrets.adminPassword
+    value: adminPassword
   }
 }
 
-module kvSecretAdminPubKey './kv_secrets.bicep' = {
+module kvSecretAdminPubKey './kv_secrets.bicep' = if (!autogenerateSecrets)  {
   name: 'kvSecrets-admin-pubkey'
   params: {
     vaultName: azhopKeyvault.outputs.keyvaultName
     name: '${config.admin_user}-pubkey'
-    value: secrets.adminSshPublicKey
+    value: adminSshPublicKey
   }
 }
 
-module kvSecretAdminPrivKey './kv_secrets.bicep' = {
+module kvSecretAdminPrivKey './kv_secrets.bicep' = if (!autogenerateSecrets)  {
   name: 'kvSecrets-admin-privkey'
   params: {
     vaultName: azhopKeyvault.outputs.keyvaultName
     name: '${config.admin_user}-privkey'
-    value: secrets.adminSshPrivateKey
+    value: adminSshPrivateKey
   }
 }
 
-module kvSecretDBPassword './kv_secrets.bicep' = if (createDatabase) {
+module kvSecretDBPassword './kv_secrets.bicep' = if (!autogenerateSecrets && createDatabase) {
   name: 'kvSecrets-db-password'
   params: {
     vaultName: azhopKeyvault.outputs.keyvaultName
     name: '${config.slurm.admin_user}-password'
-    value: secrets.databaseAdminPassword
+    value: databaseAdminPassword
   }
 }
 
@@ -728,7 +763,7 @@ module kvSecretDomainJoin './kv_secrets.bicep' = if (createAD) {
   params: {
     vaultName: azhopKeyvault.outputs.keyvaultName
     name: '${config.domain.domain_join_user.username}-password'
-    value: domainPassword
+    value: autogenerateSecrets ? kv.getSecret(azhopSecrets.outputs.secrets.adminPassword) : adminPassword
   }
 }
 
@@ -771,7 +806,7 @@ module azhopMariaDB './mariadb.bicep' = if (createDatabase) {
     location: location
     mariaDbName: config.mariadb_name
     adminUser: config.slurm.admin_user
-    adminPassword: secrets.databaseAdminPassword
+    adminPassword: autogenerateSecrets ? kv.getSecret(azhopSecrets.outputs.secrets.databaseAdminPassword) : databaseAdminPassword
     adminSubnetId: subnetIds.admin
     vnetId: azhopNetwork.outputs.vnetId
     sslEnforcement: config.enable_remote_winviz ? false : true // based whether guacamole is enabled (guac doesn't support ssl atm)
@@ -798,7 +833,7 @@ module azhopAnf './anf.bicep' = if (config.anf.create) {
     dualProtocol: config.anf.dual_protocol
     subnetId: subnetIds.netapp
     adUser: config.admin_user
-    adPassword: secrets.adminPassword
+    adPassword: autogenerateSecrets ? kv.getSecret(azhopSecrets.outputs.secrets.adminPassword) : adminPassword
     adDns: adIp
     serviceLevel: config.anf.service_level
     sizeGB: config.anf.size_gb
@@ -985,6 +1020,10 @@ output azhopPackerOptions object = (config.deploy_sig) ? {
   var_virtual_network_name: config.vnet.name
   var_virtual_network_subnet_name: config.vnet.subnets.compute.name
   var_virtual_network_resource_group_name: azhopResourceGroupName
+  var_ssh_bastion_host: azhopVm[indexOf(map(vmItems, item => item.key), 'jumpbox')].outputs.privateIp // TODO: add support for public IP
+  var_ssh_bastion_port: '${config.vms.jumpbox.sshPort}'
+  var_ssh_bastion_username: config.admin_user
+  var_ssh_bastion_private_key_file: '../${config.admin_user}_id_rsa'
   var_queue_manager: config.queue_manager
 } : {}
 
