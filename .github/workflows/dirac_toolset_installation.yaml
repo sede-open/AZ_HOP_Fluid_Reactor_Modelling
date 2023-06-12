@@ -1,0 +1,24 @@
+name: Toolset Installation 
+
+# on: 
+#  workflow_dispatch
+
+on:
+  push:
+
+
+jobs:
+  cosmos_data_correction:
+    runs-on: ubuntu-latest
+    environment: non-prod
+  
+    defaults:
+      run:
+        working-directory: "./toolset/scripts"
+      
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Toolset Installation 
+        run: |
+          sh install.sh
