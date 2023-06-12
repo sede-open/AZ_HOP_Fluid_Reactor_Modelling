@@ -17,7 +17,7 @@ if [ $INSTALL_IN_CONDA = true ]; then
     os_arch=$(arch)
     printf "hahahaha"
     printf $os_type
-    printf "-----------------------"
+    printf "hahahaha"
     if [[ "$os_type" == "darwin" ]]; then
         if [[ "$os_arch" == "arm64" ]]; then
             miniconda_url=$MINICONDA_URL_MAC_ARM
