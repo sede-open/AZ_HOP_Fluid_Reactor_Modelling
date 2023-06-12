@@ -20,6 +20,4 @@ jobs:
 
       - name: Toolset Installation 
         run: |
-          ls
-          pwd
-          sh install.sh
+          bash install.sh

@@ -15,9 +15,6 @@ INSTALL_IN_CONDA=${INSTALL_IN_CONDA:-true}
 if [ $INSTALL_IN_CONDA = true ]; then
     os_type=$(uname | awk '{print tolower($0)}')
     os_arch=$(arch)
-    printf "hahahaha"
-    printf $os_type
-    printf "hahahaha"
     if [[ "$os_type" == "darwin" ]]; then
         if [[ "$os_arch" == "arm64" ]]; then
             miniconda_url=$MINICONDA_URL_MAC_ARM
