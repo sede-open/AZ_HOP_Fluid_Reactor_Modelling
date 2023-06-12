@@ -14,11 +14,13 @@ jobs:
   
     defaults:
       run:
-        working-directory: "./toolset/scripts"
+        working-directory: "./toolset/scripts/"
       
     steps:
       - uses: actions/checkout@v3
 
       - name: Toolset Installation 
         run: |
+          ls
+          pwd
           sh install.sh
