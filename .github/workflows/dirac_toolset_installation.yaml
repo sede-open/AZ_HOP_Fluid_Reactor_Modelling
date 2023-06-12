@@ -9,8 +9,7 @@ on:
 
 jobs:
   cosmos_data_correction:
-    runs-on: ubuntu-latest
-    environment: non-prod
+    runs-on: ubuntu-20.04
   
     defaults:
       run:
