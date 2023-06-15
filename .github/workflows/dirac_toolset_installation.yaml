@@ -8,12 +8,26 @@ on:
 
 
 jobs:
-  baracuda_infra_setup:
+  install_required_tools:
     runs-on: ubuntu-20.04
   
     defaults:
       run:
         working-directory: "./toolset/scripts/"
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Toolset Installation 
+        run: |
+          bash install.sh
+      
+
+  baracuda_infra_setup:
+    runs-on: ubuntu-20.04
+  
+    # defaults:
+    #   run:
+    #     working-directory: "./toolset/scripts/"
       
     env:
       ARM_CLIENT_ID: ${{secrets.ARM_CLIENT_ID}}
@@ -32,7 +46,7 @@ jobs:
         run: |
           bash build.sh -a plan
 
-      - name: Terraform Plan 
+      - name: List Directories
         run: |
           ls -l 
           ls tf
