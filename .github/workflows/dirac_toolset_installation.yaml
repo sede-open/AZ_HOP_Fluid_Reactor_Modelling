@@ -24,6 +24,7 @@ jobs:
 
   baracuda_infra_setup:
     runs-on: ubuntu-20.04
+    needs: install_required_tools
   
     # defaults:
     #   run:
@@ -37,10 +38,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Toolset Installation 
-        run: |
-          bash install.sh
       
       - name: Terraform Plan 
         run: |
