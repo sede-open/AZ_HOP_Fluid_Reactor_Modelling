@@ -5,7 +5,7 @@
 #
 set -e
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-AZHOP_CONFIG=./config.yml
+AZHOP_CONFIG=config.yml
 BICEP_ROOT=$THIS_DIR/bicep
 ARM_ROOT=$THIS_DIR/marketplace/solution
 AZCLI_VERSION_MAJOR=2
