@@ -29,7 +29,7 @@ jobs:
 
       - name: Terraform Plan 
         run: |
-          bash build.sh -a plan
+          bash ./build.sh -a plan
 
       - name: List Directories
         run: |
