@@ -40,16 +40,16 @@ tags:
   project: azhop
 # Define an Azure Netapp Files (ANF) account, single pool and volume
 # If not present, assume that there is an existing NFS share for the users home directory
-# anf:
-#   create: false
-#   # Size of the ANF pool and unique volume (min: 4TB, max: 100TB)
-#   homefs_size_tb: 4
-#   # Service level of the ANF volume, can be: Standard, Premium, Ultra
-#   homefs_service_level: Standard
-#   # dual protocol
-#   dual_protocol: false # true to enable SMB support. false by default
-#   # If alerting is enabled, this value will be used to determine when to trigger alerts 
-#   alert_threshold: 80 # alert when ANF volume reaches this threshold
+anf:
+  create: false
+  # Size of the ANF pool and unique volume (min: 4TB, max: 100TB)
+  homefs_size_tb: 40
+  # Service level of the ANF volume, can be: Standard, Premium, Ultra
+  homefs_service_level: Standard
+  # dual protocol
+  dual_protocol: false # true to enable SMB support. false by default
+  # If alerting is enabled, this value will be used to determine when to trigger alerts 
+  alert_threshold: 80 # alert when ANF volume reaches this threshold
 
 # For small deployments you can use Azure Files instead of ANF for the home directory
 azurefiles:
@@ -60,7 +60,7 @@ azurefiles:
 mounts:
   # mount settings for the user home directory
   home: # This home name can't be changed
-    type: azurefiles # anf or azurefiles, default to anf. One of the two should be defined in order to mount the home directory
+    type: anf #or azurefiles, default to anf. One of the two should be defined in order to mount the home directory
     mountpoint: /sharedhome # /sharedhome for example
     server: '172.26.0.133' # Specify an existing NFS server name or IP, when using the ANF built in use '{{anf_home_ip}}'
     export: '/data0/home' # Specify an existing NFS export directory, when using the ANF built in use '{{anf_home_path}}'
