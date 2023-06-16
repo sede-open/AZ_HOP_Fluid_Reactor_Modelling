@@ -24,10 +24,10 @@ log_analytics:
   #subscription_id: # Optional, if not specified the current subscription will be used
 
 # Option to install the monitoring agent on static infra VMs. Can be disabled if the agent is installed by policy.  
-# monitoring: 
-#   azure_monitor_agent: false
-#   telegraf: false
-#   grafana: false
+monitoring: 
+  azure_monitor_agent: false
+  telegraf: false
+  grafana: false
   
 #If set to true, it will create alert rules associated with az-hop. Enablement of alerting will require the specification of an admin email to send alerts to.
 alerting:
