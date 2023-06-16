@@ -23,11 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Toolset Installation 
-      #   run: |
-      #     bash ./toolset/scripts/install.sh
+      - name: Toolset Installation 
+        run: |
+          bash ./toolset/scripts/install.sh
 
-      
+
       - name: Terraform Plan 
         run: |
           ls
