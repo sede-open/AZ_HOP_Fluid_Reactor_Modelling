@@ -5,10 +5,6 @@
 #
 set -e
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-echo "hahahaha"
-echo $THIS_DIR
-echo ls -a
-echo "hahahaha"
 AZHOP_CONFIG=config.yml
 BICEP_ROOT=$THIS_DIR/bicep
 ARM_ROOT=$THIS_DIR/marketplace/solution
