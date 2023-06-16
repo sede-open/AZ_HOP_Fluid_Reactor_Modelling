@@ -27,7 +27,6 @@ jobs:
         run: |
           bash ./toolset/scripts/install.sh
 
-
       - name: Terraform Plan 
         run: |
           ls
