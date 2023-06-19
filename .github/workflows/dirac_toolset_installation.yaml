@@ -37,3 +37,5 @@ jobs:
         run: |
           ls -l 
           ls -a tf
+          az version
+          
