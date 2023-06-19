@@ -36,4 +36,4 @@ jobs:
       - name: List Directories
         run: |
           ls -l 
-          ls tf
+          ls -a tf
