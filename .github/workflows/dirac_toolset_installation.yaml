@@ -16,6 +16,7 @@ jobs:
       ARM_CLIENT_SECRET: ${{secrets.ARM_CLIENT_SECRET}}
       ARM_SUBSCRIPTION_ID: ${{secrets.ARM_SUBSCRIPTION_ID}}
       ARM_TENANT_ID: ${{secrets.ARM_TENANT_ID}}
+      SAS_TOKEN: ${{ secrets.TF_STATE_STORAGE_ACCOUNT_SAS}}
   
     # defaults:
     #   run:
@@ -38,4 +39,5 @@ jobs:
           ls -l 
           ls -a tf
           az version
+          azcopy copy "tf/network.tf" "https://asdiracdevusdevdiag.blob.core.windows.net/1abc/${{ env.SAS_TOKEN }}" --recursive=true
           
