@@ -39,12 +39,13 @@ def _catch_sys_error(cmd_list):
 
 def create_user(username):
     import pwd
+    home_dir = "/home/{}".format(username)
     try:
         pwd.getpwnam(username)
     except KeyError:
         print('Creating user {}'.format(username))
-        _catch_sys_error(["useradd", "-m", "-d", "/home/{}".format(username), username])
-    _catch_sys_error(["chown", "-R", username + ":" + username, "/home/{}".format(username)])
+        _catch_sys_error(["useradd", "-m", "-d", home_dir, username])
+    _catch_sys_error(["chown", "-R", username + ":" + username, home_dir])
 
 def create_keypair(username, public_key=None):
     user_home = "/home/{}".format(username)
