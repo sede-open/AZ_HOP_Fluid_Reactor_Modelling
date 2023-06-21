@@ -165,7 +165,11 @@ locals {
     use_cyclecloud_image_id = try(length(split("/", local.configuration_yml["cyclecloud"]["image"])[1])>0, false)
     cyclecloud_image_id = local.use_cyclecloud_image_id ? local.configuration_yml["cyclecloud"]["image"] : null
 
-    _empty_image_plan = {}
+    _empty_image_plan = {
+        publisher = ""
+        product   = ""
+        name      = ""
+    }
     _linux_base_image_plan = {
         publisher = try(split(":", local.configuration_yml["linux_base_plan"])[0], "")
         product   = try(split(":", local.configuration_yml["linux_base_plan"])[1], "")
