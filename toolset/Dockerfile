@@ -9,8 +9,6 @@ ARG SSH_PASSWD
 
 ENV SSH_PASSWD=${SSH_PASSWD} \
     USERNAME=${USERNAME} \
-    # TF_DATA_DIR="/home/${USERNAME}/.terraform.cache" \
-    # TF_PLUGIN_CACHE_DIR="/home/${USERNAME}/.terraform.cache/plugin-cache" \
     DEBIAN_FRONTEND=noninteractive
 
 COPY ./scripts/* /tmp/
