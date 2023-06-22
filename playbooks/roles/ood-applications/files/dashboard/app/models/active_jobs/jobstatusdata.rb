@@ -77,17 +77,17 @@ module ActiveJobs
       attributes = []
       attributes.push Attribute.new "Cluster", self.cluster_title
       attributes.push Attribute.new "PBS Id", self.pbsid
-      attributes.push Attribute.new self.STR_JOB_NAME, self.jobname
+      attributes.push Attribute.new STR_JOB_NAME, self.jobname
       attributes.push Attribute.new "User", self.username
       attributes.push Attribute.new "Account", self.account
       attributes.push Attribute.new "Walltime", (info.native.fetch(:Resource_List, {})[:walltime].presence || "00:00:00")
-      attributes.push Attribute.new self.STR_WALLTIME_USED, self.walltime_used
+      attributes.push Attribute.new STR_WALLTIME_USED, self.walltime_used
       node_count = info.native.fetch(:Resource_List, {})[:nodect].to_i
       attributes.push Attribute.new "Node Count", node_count
       ppn = info.native.fetch(:Resource_List, {})[:nodes].to_s.split("ppn=").second || '0'
-      attributes.push Attribute.new self.STR_NODE_LIST, self.nodes.join(", ") unless self.nodes.blank?
+      attributes.push Attribute.new STR_NODE_LIST, self.nodes.join(", ") unless self.nodes.blank?
       attributes.push Attribute.new "PPN", ppn
-      attributes.push Attribute.new self.STR_TOTAL_CPUS, ppn.to_i * node_count.to_i
+      attributes.push Attribute.new STR_TOTAL_CPUS, ppn.to_i * node_count.to_i
       attributes.push Attribute.new "CPU Time", info.native.fetch(:resources_used, {})[:cput].presence || '0'
       attributes.push Attribute.new "Memory", info.native.fetch(:resources_used, {})[:mem].presence || "0 b"
       attributes.push Attribute.new "Virtual Memory", info.native.fetch(:resources_used, {})[:vmem].presence || "0 b"
@@ -114,16 +114,16 @@ module ActiveJobs
       return unless info.native
       attributes = []
       attributes.push Attribute.new "Cluster", self.cluster_title
-      attributes.push Attribute.new self.STR_JOB_ID, self.pbsid
-      attributes.push Attribute.new self.STR_JOB_NAME, self.jobname
+      attributes.push Attribute.new STR_JOB_ID, self.pbsid
+      attributes.push Attribute.new STR_JOB_NAME, self.jobname
       attributes.push Attribute.new "User", self.username
       attributes.push Attribute.new "Account", self.account
       attributes.push Attribute.new "Partition", self.queue
       attributes.push Attribute.new "State", info.native[:state]
       attributes.push Attribute.new "Reason", info.native[:reason]
       attributes.push Attribute.new "Total Nodes", info.native[:nodes]
-      attributes.push Attribute.new self.STR_NODE_LIST, self.nodes.join(", ") unless self.nodes.blank?
-      attributes.push Attribute.new self.STR_TOTAL_CPUS, info.native[:cpus]
+      attributes.push Attribute.new STR_NODE_LIST, self.nodes.join(", ") unless self.nodes.blank?
+      attributes.push Attribute.new STR_TOTAL_CPUS, info.native[:cpus]
       attributes.push Attribute.new "Time Limit", info.native[:time_limit]
       attributes.push Attribute.new "Time Used", info.native[:time_used]
       attributes.push Attribute.new "Memory", info.native[:min_memory]
@@ -148,20 +148,20 @@ module ActiveJobs
     def extended_data_lsf(info)
       return unless info.native
       attributes = []
-      attributes.push Attribute.new self.STR_JOB_ID, self.pbsid
+      attributes.push Attribute.new STR_JOB_ID, self.pbsid
       attributes.push Attribute.new "User", self.username
       attributes.push Attribute.new "Queue", self.queue
       attributes.push Attribute.new "Cluster", self.cluster_title
       attributes.push Attribute.new "From Host", info.native[:from_host]
       attributes.push Attribute.new "Exec Host", info.native[:exec_host]
-      attributes.push Attribute.new self.STR_JOB_NAME, self.jobname
+      attributes.push Attribute.new STR_JOB_NAME, self.jobname
       attributes.push Attribute.new "Submit Time", info.native[:submit_time]
       attributes.push Attribute.new "Project Name", info.native[:project]
       attributes.push Attribute.new "CPU Used", info.native[:cpu_used]
       attributes.push Attribute.new "Mem", info.native[:mem]
       attributes.push Attribute.new "Swap", info.native[:swap]
       attributes.push Attribute.new "PIDs", info.native[:pids]
-      attributes.push Attribute.new self.STR_NODE_LIST, self.nodes.join(", ") unless self.nodes.blank?
+      attributes.push Attribute.new STR_NODE_LIST, self.nodes.join(", ") unless self.nodes.blank?
       attributes.push Attribute.new "Start Time", info.native[:start_time]
       attributes.push Attribute.new "Finish Time", info.native[:finish_time]
 
@@ -183,18 +183,18 @@ module ActiveJobs
       attributes = []
       attributes.push Attribute.new "Cluster", self.cluster_title
       attributes.push Attribute.new "PBS Id", self.pbsid
-      attributes.push Attribute.new self.STR_JOB_NAME, self.jobname
+      attributes.push Attribute.new STR_JOB_NAME, self.jobname
       attributes.push Attribute.new "User", self.username
       attributes.push Attribute.new "Account", self.account if info.accounting_id
       attributes.push Attribute.new "Group List", info.native[:group_list] if info.native[:group_list]
       attributes.push Attribute.new "Walltime", (info.native.fetch(:Resource_List, {})[:walltime].presence || "00:00:00")
       walltime_used = info.wallclock_time || 0
-      attributes.push Attribute.new self.STR_WALLTIME_USED, self.walltime_used
+      attributes.push Attribute.new STR_WALLTIME_USED, self.walltime_used
       node_count = info.native.fetch(:Resource_List, {})[:nodect].to_i
       attributes.push Attribute.new "Node Count", node_count.to_s
-      attributes.push Attribute.new self.STR_NODE_LIST, self.nodes.join(", ") unless self.nodes.blank?
+      attributes.push Attribute.new STR_NODE_LIST, self.nodes.join(", ") unless self.nodes.blank?
       total_procs = info.native[:Resource_List][:ncpus].presence || '0'
-      attributes.push Attribute.new self.STR_TOTAL_CPUS, total_procs
+      attributes.push Attribute.new STR_TOTAL_CPUS, total_procs
       cput = info.native.fetch(:resources_used, {})[:cput].presence || 0
       attributes.push Attribute.new "CPU Time", pretty_time(cput.to_i)
       attributes.push Attribute.new "Memory", info.native.fetch(:resources_used, {})[:mem].presence || "0 b"
@@ -223,13 +223,13 @@ module ActiveJobs
       attributes = []
       attributes.push Attribute.new "Cluster", self.cluster_title
       attributes.push Attribute.new "Cluster Id", self.cluster
-      attributes.push Attribute.new self.STR_JOB_ID, self.pbsid
-      attributes.push Attribute.new self.STR_JOB_NAME, self.jobname
+      attributes.push Attribute.new STR_JOB_ID, self.pbsid
+      attributes.push Attribute.new STR_JOB_NAME, self.jobname
       attributes.push Attribute.new "User", self.username
       attributes.push Attribute.new "Account", self.account
       attributes.push Attribute.new "Queue", self.queue
       attributes.push Attribute.new "Start Time", self.starttime
-      attributes.push Attribute.new self.STR_WALLTIME_USED, self.walltime_used
+      attributes.push Attribute.new STR_WALLTIME_USED, self.walltime_used
       attributes.push Attribute.new "Status", self.status
 
       {
@@ -282,11 +282,11 @@ module ActiveJobs
       attributes = []
       attributes.push Attribute.new "Cluster", self.cluster_title
       attributes.push Attribute.new "Cluster Id", self.cluster
-      attributes.push Attribute.new self.STR_JOB_ID, self.pbsid
-      attributes.push Attribute.new self.STR_JOB_NAME, self.jobname
+      attributes.push Attribute.new STR_JOB_ID, self.pbsid
+      attributes.push Attribute.new STR_JOB_NAME, self.jobname
       attributes.push Attribute.new "User", self.username
       attributes.push Attribute.new "Walltime", pretty_time(info.native["walltime"].to_i)
-      attributes.push Attribute.new self.STR_NODE_LIST, self.nodes.join(", ") unless self.nodes.blank?
+      attributes.push Attribute.new STR_NODE_LIST, self.nodes.join(", ") unless self.nodes.blank?
       attributes.push Attribute.new "Queue", self.queue
       attributes.push Attribute.new "Status", self.status
       {
