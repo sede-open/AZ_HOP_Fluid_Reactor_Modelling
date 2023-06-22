@@ -12,6 +12,7 @@ module ActiveJobs
                 :walltime, :walltime_used, :submit_args, :output_path, :nodect, :ppn, :total_cpu, :queue, :cput,
                 :mem, :vmem, :shell_url, :file_explorer_url, :extended_available, :native_attribs, :error
 
+    STR_CLUSTER = "Cluster"
     STR_JOB_NAME = "Job Name"
     STR_WALLTIME_USED = "Walltime Used"
     STR_NODE_LIST = "Node List"
@@ -75,7 +76,7 @@ module ActiveJobs
     def extended_data_torque(info)
       return unless info.native
       attributes = []
-      attributes.push Attribute.new "Cluster", self.cluster_title
+      attributes.push Attribute.new STR_CLUSTER, self.cluster_title
       attributes.push Attribute.new "PBS Id", self.pbsid
       attributes.push Attribute.new STR_JOB_NAME, self.jobname
       attributes.push Attribute.new "User", self.username
@@ -113,7 +114,7 @@ module ActiveJobs
     def extended_data_slurm(info)
       return unless info.native
       attributes = []
-      attributes.push Attribute.new "Cluster", self.cluster_title
+      attributes.push Attribute.new STR_CLUSTER, self.cluster_title
       attributes.push Attribute.new STR_JOB_ID, self.pbsid
       attributes.push Attribute.new STR_JOB_NAME, self.jobname
       attributes.push Attribute.new "User", self.username
@@ -151,7 +152,7 @@ module ActiveJobs
       attributes.push Attribute.new STR_JOB_ID, self.pbsid
       attributes.push Attribute.new "User", self.username
       attributes.push Attribute.new "Queue", self.queue
-      attributes.push Attribute.new "Cluster", self.cluster_title
+      attributes.push Attribute.new STR_CLUSTER, self.cluster_title
       attributes.push Attribute.new "From Host", info.native[:from_host]
       attributes.push Attribute.new "Exec Host", info.native[:exec_host]
       attributes.push Attribute.new STR_JOB_NAME, self.jobname
@@ -181,7 +182,7 @@ module ActiveJobs
       return unless info.native
 
       attributes = []
-      attributes.push Attribute.new "Cluster", self.cluster_title
+      attributes.push Attribute.new STR_CLUSTER, self.cluster_title
       attributes.push Attribute.new "PBS Id", self.pbsid
       attributes.push Attribute.new STR_JOB_NAME, self.jobname
       attributes.push Attribute.new "User", self.username
@@ -221,7 +222,7 @@ module ActiveJobs
     def extended_data_sge(info)
       return unless info.native
       attributes = []
-      attributes.push Attribute.new "Cluster", self.cluster_title
+      attributes.push Attribute.new STR_CLUSTER, self.cluster_title
       attributes.push Attribute.new "Cluster Id", self.cluster
       attributes.push Attribute.new STR_JOB_ID, self.pbsid
       attributes.push Attribute.new STR_JOB_NAME, self.jobname
@@ -280,7 +281,7 @@ module ActiveJobs
       return unless info.native
 
       attributes = []
-      attributes.push Attribute.new "Cluster", self.cluster_title
+      attributes.push Attribute.new STR_CLUSTER, self.cluster_title
       attributes.push Attribute.new "Cluster Id", self.cluster
       attributes.push Attribute.new STR_JOB_ID, self.pbsid
       attributes.push Attribute.new STR_JOB_NAME, self.jobname
