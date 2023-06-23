@@ -107,8 +107,6 @@ def cyclecloud_account_setup(vm_metadata, use_managed_identity, tenant_id, appli
 
     print("Setting up azure account in CycleCloud and initializing cyclecloud CLI")
 
-    accept_terms = True
-
     subscription_id = vm_metadata["compute"]["subscriptionId"]
     location = vm_metadata["compute"]["location"]
     resource_group = vm_metadata["compute"]["resourceGroupName"]
@@ -163,15 +161,14 @@ def cyclecloud_account_setup(vm_metadata, use_managed_identity, tenant_id, appli
         app_setting_installation
     ]
 
-    if accept_terms:
-        # Terms accepted, auto-create login user account as well
-        login_user = {
-            "AdType": "AuthenticatedUser",
-            "Name": admin_user,
-            "RawPassword": cyclecloud_admin_pw,
-            "Superuser": True
-        }
-        account_data.append(login_user)
+    # Terms accepted, auto-create login user account as well
+    login_user = {
+        "AdType": "AuthenticatedUser",
+        "Name": admin_user,
+        "RawPassword": cyclecloud_admin_pw,
+        "Superuser": True
+    }
+    account_data.append(login_user)
 
     account_data_file = tmpdir + "/account_data.json"
     azure_data_file = tmpdir + "/azure_data.json"
