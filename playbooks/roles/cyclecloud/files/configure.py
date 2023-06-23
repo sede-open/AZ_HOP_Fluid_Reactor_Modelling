@@ -103,7 +103,7 @@ def generate_password_string():
 
 
 def cyclecloud_account_setup(vm_metadata, use_managed_identity, tenant_id, application_id, application_secret,
-                             admin_user, azure_cloud, accept_terms, password, storageAccount):
+                             admin_user, azure_cloud, password, storageAccount):
 
     print("Setting up azure account in CycleCloud and initializing cyclecloud CLI")
 
@@ -358,7 +358,7 @@ def main():
 
     cyclecloud_account_setup(vm_metadata, args.useManagedIdentity, args.tenantId, args.applicationId,
                              args.applicationSecret, args.username, azureSovereignCloud,
-                             args.acceptTerms, args.password, args.storageAccount)
+                             args.password, args.storageAccount)
 
     #  Create user requires root privileges
     create_user_credential(args.username, args.publickey)
